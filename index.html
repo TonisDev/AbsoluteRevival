@@ -33,7 +33,7 @@
         label {
             margin-top: 10px;
         }
-        input, select, .time-slot {
+        input, select {
             padding: 10px;
             margin-top: 5px;
             border-radius: 5px;
@@ -50,46 +50,56 @@
         input[type="submit"]:hover {
             background-color: #0056b3;
         }
-        .time-slots {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .time-slot {
-            cursor: pointer;
-            background: #e7e7e7;
-            border: 1px solid #ddd;
-            text-align: center;
-            width: calc(25% - 10px);
-        }
-        .time-slot.selected {
-            background: #007BFF;
-            color: white;
-        }
         .booking {
             background: #f1f1f1;
             padding: 10px;
             margin: 10px 0;
             border-radius: 5px;
         }
+        .admin-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .admin-link:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+    <a href="b00kedin.html" class="admin-link">Sessions</a>
     <div class="container">
         <h1>Book a Session</h1>
         <form id="bookingForm">
             <label for="name">Full Name:</label>
             <input type="text" id="name" name="name" required>
             <label for="phone">Phone:</label>
-            <input type="text" id="phone" name="phone" required>
+            <input type="text" id="phone" name="phone" pattern="\d{10}" required>
             <label for="date">Date:</label>
             <input type="date" id="date" name="date" required>
             <label for="time">Time:</label>
-            <div id="timeSlots" class="time-slots"></div>
-            <input type="hidden" id="time" name="time" required>
+            <input type="time" id="time" name="time" min="10:00" max="21:00" required>
             <label for="type">Type of Massage:</label>
             <select id="type" name="type" required>
-                <option value="Full Body">Full Body</option>
+                <option value="Full Body" selected>Full Body</option>
                 <option value="Back and Shoulders">Back and Shoulders</option>
                 <option value="Legs">Legs</option>
             </select>
@@ -97,14 +107,22 @@
             <select id="duration" name="duration" required>
                 <option value="30">30'</option>
                 <option value="45">45'</option>
-                <option value="60">60'</option>
+                <option value="60" selected>60'</option>
                 <option value="90">90'</option>
             </select>
             <input type="submit" value="Book">
         </form>
 
         <h2>Existing Bookings</h2>
-        <div id="bookingsList"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="bookingsList"></tbody>
+        </table>
     </div>
 
     <script>
@@ -120,6 +138,7 @@
             const type = document.getElementById('type').value;
             const duration = document.getElementById('duration').value;
             const dateTime = `${date} ${time}`;
+            const userIP = '127.0.0.1'; // Placeholder for user IP, update it with actual user IP retrieval method
 
             // Check if the slot is already taken
             if (bookings.some(booking => booking.dateTime === dateTime)) {
@@ -128,12 +147,11 @@
             }
 
             // Add the new booking
-            bookings.push({ name, phone, dateTime, type, duration });
+            bookings.push({ name, phone, dateTime, type, duration, userIP });
             localStorage.setItem('bookings', JSON.stringify(bookings));
 
             // Reset the form and update the bookings list
             document.getElementById('bookingForm').reset();
-            document.getElementById('time').value = '';
             displayBookings();
         });
 
@@ -147,35 +165,20 @@
                 const formattedDate = bookingDate.toLocaleDateString(undefined, options);
                 const formattedTime = bookingDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                const div = document.createElement('div');
-                div.classList.add('booking');
-                div.textContent = `${formattedDate} | ${formattedTime} | ${booking.name} ${booking.phone} | ${booking.type} | ${booking.duration}'`;
-                bookingsList.appendChild(div);
+                const tr = document.createElement('tr');
+                const tdDate = document.createElement('td');
+                const tdTime = document.createElement('td');
+
+                tdDate.textContent = formattedDate;
+                tdTime.textContent = formattedTime;
+
+                tr.appendChild(tdDate);
+                tr.appendChild(tdTime);
+                bookingsList.appendChild(tr);
             });
         }
 
-        function generateTimeSlots() {
-            const timeSlotsContainer = document.getElementById('timeSlots');
-            const startTime = 10; // 10:00 AM
-            const endTime = 21; // 9:00 PM
-
-            for (let hour = startTime; hour <= endTime; hour++) {
-                const time = hour < 12 ? `${hour}:00 AM` : hour === 12 ? `${hour}:00 PM` : `${hour - 12}:00 PM`;
-                const slotDiv = document.createElement('div');
-                slotDiv.classList.add('time-slot');
-                slotDiv.textContent = time;
-                slotDiv.dataset.time = `${hour < 10 ? '0' : ''}${hour}:00`;
-                slotDiv.addEventListener('click', function() {
-                    document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
-                    slotDiv.classList.add('selected');
-                    document.getElementById('time').value = slotDiv.dataset.time;
-                });
-                timeSlotsContainer.appendChild(slotDiv);
-            }
-        }
-
         // Generate the time slots on page load
-        generateTimeSlots();
         displayBookings();
     </script>
 </body>
