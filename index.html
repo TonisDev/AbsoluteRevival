@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking System</title>
+    <title>Massage Booking</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,7 +24,7 @@
             max-width: 600px;
             width: 100%;
         }
-        h1, h2 {
+        h1 {
             text-align: center;
         }
         form {
@@ -39,7 +40,7 @@
             border-radius: 5px;
             border: 1px solid #ddd;
         }
-        input[type="submit"], button {
+        input[type="submit"] {
             margin-top: 20px;
             background-color: #007BFF;
             color: white;
@@ -47,8 +48,11 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-        input[type="submit"]:hover, button:hover {
+        input[type="submit"]:hover {
             background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
         }
         .booking {
             background: #f1f1f1;
@@ -56,153 +60,119 @@
             margin: 10px 0;
             border-radius: 5px;
         }
-        .admin-link {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #007BFF;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-        }
-        .admin-link:hover {
-            background-color: #0056b3;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 10px;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
-    <a href="b00ked.html" class="admin-link">Sessions</a>
     <div class="container">
-        <h1>Book a Session</h1>
+        <h1>Book Your Massage</h1>
         <form id="bookingForm">
             <label for="name">Full Name:</label>
             <input type="text" id="name" name="name" required>
-            <label for="phone">Phone:</label>
-            <input type="text" id="phone" name="phone" pattern="\d{10}" required>
+
+            <label for="phone">Phone Number:</label>
+            <input type="text" id="phone" name="phone" required pattern="\d{10}" title="Phone number must be 10 digits">
+
             <label for="date">Date:</label>
             <input type="date" id="date" name="date" required>
+
             <label for="time">Time:</label>
-            <input type="time" id="time" name="time" min="10:00" max="21:00" required>
-            <label for="type">Type of Massage:</label>
-            <select id="type" name="type" required>
-                <option value="Full Body" selected>Full Body</option>
-                <option value="Back and Shoulders">Back and Shoulders</option>
-                <option value="Legs">Legs</option>
+            <input type="text" id="time" name="time" required>
+
+            <label for="type">Massage Type:</label>
+            <select id="type" name="type">
+                <option value="full body">Full Body</option>
+                <option value="back">Back</option>
+                <option value="foot">Foot</option>
             </select>
+
             <label for="duration">Duration:</label>
-            <select id="duration" name="duration" required>
+            <select id="duration" name="duration">
                 <option value="30">30'</option>
                 <option value="45">45'</option>
                 <option value="60" selected>60'</option>
                 <option value="90">90'</option>
             </select>
-            <input type="submit" value="Book">
-        </form>
 
-        <h2>Existing Bookings</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Client</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="bookingsList"></tbody>
-        </table>
+            <input type="submit" value="Book Now">
+        </form>
+        <div id="confirmation" class="hidden">
+            <p>Are you sure you want to submit this booking?</p>
+            <button onclick="confirmBooking()">Yes</button>
+            <button onclick="cancelBooking()">No</button>
+        </div>
+        <div id="bookingsContainer" class="hidden">
+            <h2>Upcoming Bookings</h2>
+            <div id="bookingsList"></div>
+        </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
 
+        // Initialize Flatpickr for time picking
+        flatpickr("#time", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            minDate: "10:00",
+            maxDate: "21:00",
+            minuteIncrement: 15
+        });
+
         document.getElementById('bookingForm').addEventListener('submit', function(event) {
             event.preventDefault();
+            document.getElementById('confirmation').classList.remove('hidden');
+        });
 
+        function confirmBooking() {
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
             const date = document.getElementById('date').value;
             const time = document.getElementById('time').value;
             const type = document.getElementById('type').value;
             const duration = document.getElementById('duration').value;
+            const userIP = '127.0.0.1'; // Placeholder for IP address, replace with actual IP retrieval method
+
             const dateTime = `${date} ${time}`;
-            const userIP = '127.0.0.1'; // Placeholder for user IP
+            const booking = {
+                dateTime,
+                name,
+                phone,
+                type,
+                duration,
+                userIP
+            };
 
-            // Confirmation before booking
-            if (!confirm(`Are you sure you want to book for ${name} on ${date} at ${time}?`)) {
-                return;
-            }
-
-            // Check if the slot is already taken
-            if (bookings.some(booking => booking.dateTime === dateTime)) {
-                alert('This slot is already booked.');
-                return;
-            }
-
-            // Add the new booking
-            bookings.push({ name, phone, dateTime, type, duration, userIP });
+            bookings.push(booking);
             localStorage.setItem('bookings', JSON.stringify(bookings));
-
-            // Reset the form and update the bookings list
-            document.getElementById('bookingForm').reset();
+            document.getElementById('confirmation').classList.add('hidden');
             displayBookings();
-        });
+        }
+
+        function cancelBooking() {
+            document.getElementById('confirmation').classList.add('hidden');
+        }
 
         function displayBookings() {
+            const bookingsContainer = document.getElementById('bookingsContainer');
             const bookingsList = document.getElementById('bookingsList');
             bookingsList.innerHTML = '';
 
-            bookings.forEach((booking, index) => {
+            bookings.forEach(booking => {
                 const bookingDate = new Date(booking.dateTime);
                 const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                 const formattedDate = bookingDate.toLocaleDateString(undefined, options);
                 const formattedTime = bookingDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                const tr = document.createElement('tr');
-                const tdDate = document.createElement('td');
-                const tdTime = document.createElement('td');
-                const tdName = document.createElement('td');
-                const tdActions = document.createElement('td');
-                const deleteButton = document.createElement('button');
-
-                tdDate.textContent = formattedDate;
-                tdTime.textContent = formattedTime;
-                tdName.textContent = booking.name;
-
-                deleteButton.textContent = 'Delete';
-                deleteButton.onclick = function() {
-                    if (confirm(`Are you sure you want to delete the booking for ${booking.name} on ${formattedDate} at ${formattedTime}?`)) {
-                        bookings.splice(index, 1);
-                        localStorage.setItem('bookings', JSON.stringify(bookings));
-                        displayBookings();
-                    }
-                };
-
-                tdActions.appendChild(deleteButton);
-                tr.appendChild(tdDate);
-                tr.appendChild(tdTime);
-                tr.appendChild(tdName);
-                tr.appendChild(tdActions);
-                bookingsList.appendChild(tr);
+                const div = document.createElement('div');
+                div.classList.add('booking');
+                div.textContent = `${formattedDate} | ${formattedTime} | ${booking.name} ${booking.phone} | ${booking.type} | ${booking.duration}' | ${booking.userIP}`;
+                bookingsList.appendChild(div);
             });
-        }
 
-        // Generate the bookings on page load
-        displayBookings();
+            bookingsContainer.classList.remove('hidden');
+        }
     </script>
 </body>
 </html>
