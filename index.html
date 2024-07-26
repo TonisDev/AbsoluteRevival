@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book a Session</h1>
+    <form id="bookingForm">
+        <label for="name">Full Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br>
+        <label for="phone">Phone:</label>
+        <input type="text" id="phone" name="phone" required>
+        <br>
+        <label for="date">Date (Day of the Month):</label>
+        <input type="number" id="date" name="date" min="1" max="31" required>
+        <br>
+        <label for="time">Time (HH:MM):</label>
+        <input type="time" id="time" name="time" required>
+        <br>
+        <input type="submit" value="Book">
+    </form>
+
+    <h2>Existing Bookings</h2>
+    <ul id="bookingsList"></ul>
+
+    <script>
+        const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+
+        document.getElementById('bookingForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const dateTime = `${date} ${time}`;
+
+            // Check if the slot is already taken
+            if (bookings.some(booking => booking.dateTime === dateTime)) {
+                alert('This slot is already booked.');
+                return;
+            }
+
+            // Add the new booking
+            bookings.push({ name, phone, dateTime });
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+
+            // Reset the form and update the bookings list
+            document.getElementById('bookingForm').reset();
+            displayBookings();
+        });
+
+        function displayBookings() {
+            const bookingsList = document.getElementById('bookingsList');
+            bookingsList.innerHTML = '';
+
+            bookings.forEach(booking => {
+                const li = document.createElement('li');
+                li.textContent = `${booking.dateTime} - ${booking.name}`;
+                bookingsList.appendChild(li);
+            });
+        }
+
+        // Display the current bookings on page load
+        displayBookings();
+    </script>
+</body>
+</html>
