@@ -67,39 +67,32 @@
         <form id="passphraseForm">
             <label for="passphrase">Enter Passphrase:</label>
             <input type="password" id="passphrase" name="passphrase" required>
-            <input type="submit" value="Submit">
+            <input type="submit" value="View Bookings">
         </form>
-
-        <div id="adminContent" class="hidden">
-            <h2>Booked Clients</h2>
-            <div id="clientsList"></div>
+        <div id="bookingsContainer" class="hidden">
+            <h2>Existing Bookings</h2>
+            <div id="bookingsList"></div>
         </div>
     </div>
 
     <script>
-        const encodedPassphrase = 'dG9uaQ==';
+        const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
 
         document.getElementById('passphraseForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            
-            const passphrase = document.getElementById('passphrase').value;
-            const decodedPassphrase = atob(encodedPassphrase);
 
-            if (passphrase === decodedPassphrase) {
-                document.getElementById('adminContent').classList.remove('hidden');
-                displayClients();
+            const passphrase = document.getElementById('passphrase').value;
+            if (passphrase === 'secretpass') {
+                document.getElementById('bookingsContainer').classList.remove('hidden');
+                displayBookings();
             } else {
                 alert('Incorrect passphrase.');
             }
-
-            document.getElementById('passphraseForm').reset();
         });
 
-        function displayClients() {
-            const clientsList = document.getElementById('clientsList');
-            clientsList.innerHTML = '';
-
-            const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        function displayBookings() {
+            const bookingsList = document.getElementById('bookingsList');
+            bookingsList.innerHTML = '';
 
             bookings.forEach(booking => {
                 const bookingDate = new Date(booking.dateTime);
@@ -109,8 +102,8 @@
 
                 const div = document.createElement('div');
                 div.classList.add('booking');
-                div.textContent = `${formattedDate} | ${formattedTime} | ${booking.name} ${booking.phone} | ${booking.type}`;
-                clientsList.appendChild(div);
+                div.textContent = `${formattedDate} | ${formattedTime} | ${booking.name} ${booking.phone} | ${booking.type} | ${booking.duration}'`;
+                bookingsList.appendChild(div);
             });
         }
     </script>
