@@ -154,7 +154,6 @@
             const time = document.getElementById('time').value;
             const type = document.getElementById('type').value;
             const duration = document.getElementById('duration').value;
-            const userIP = '127.0.0.1'; // Placeholder for IP address, replace with actual IP retrieval method
 
             const dateTime = new Date(`${date} ${time}`);
             const endTime = new Date(dateTime.getTime() + (parseInt(duration) * 60000));
@@ -170,16 +169,15 @@
                     name,
                     phone,
                     type,
-                    duration,
-                    userIP
+                    duration
                 };
 
                 bookings.push(booking);
                 localStorage.setItem('bookings', JSON.stringify(bookings));
                 document.getElementById('confirmation').classList.add('hidden');
-                displayBookings();
                 document.getElementById('thankYouMessage').classList.remove('hidden');
                 document.getElementById('availableTimes').classList.add('hidden');
+                displayBookings();
             } else {
                 document.getElementById('confirmation').classList.add('hidden');
                 showAvailableTimes(date, time, duration);
