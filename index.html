@@ -33,7 +33,7 @@
         label {
             margin-top: 10px;
         }
-        input, select {
+        input, select, .time-slot {
             padding: 10px;
             margin-top: 5px;
             border-radius: 5px;
@@ -49,6 +49,22 @@
         }
         input[type="submit"]:hover {
             background-color: #0056b3;
+        }
+        .time-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .time-slot {
+            cursor: pointer;
+            background: #e7e7e7;
+            border: 1px solid #ddd;
+            text-align: center;
+            width: calc(25% - 10px);
+        }
+        .time-slot.selected {
+            background: #007BFF;
+            color: white;
         }
         .booking {
             background: #f1f1f1;
@@ -69,12 +85,20 @@
             <label for="date">Date:</label>
             <input type="date" id="date" name="date" required>
             <label for="time">Time:</label>
-            <input type="time" id="time" name="time" required>
+            <div id="timeSlots" class="time-slots"></div>
+            <input type="hidden" id="time" name="time" required>
             <label for="type">Type of Massage:</label>
             <select id="type" name="type" required>
                 <option value="Full Body">Full Body</option>
                 <option value="Back and Shoulders">Back and Shoulders</option>
                 <option value="Legs">Legs</option>
+            </select>
+            <label for="duration">Duration:</label>
+            <select id="duration" name="duration" required>
+                <option value="30">30'</option>
+                <option value="45">45'</option>
+                <option value="60">60'</option>
+                <option value="90">90'</option>
             </select>
             <input type="submit" value="Book">
         </form>
@@ -94,6 +118,7 @@
             const date = document.getElementById('date').value;
             const time = document.getElementById('time').value;
             const type = document.getElementById('type').value;
+            const duration = document.getElementById('duration').value;
             const dateTime = `${date} ${time}`;
 
             // Check if the slot is already taken
@@ -103,11 +128,12 @@
             }
 
             // Add the new booking
-            bookings.push({ name, phone, dateTime, type });
+            bookings.push({ name, phone, dateTime, type, duration });
             localStorage.setItem('bookings', JSON.stringify(bookings));
 
             // Reset the form and update the bookings list
             document.getElementById('bookingForm').reset();
+            document.getElementById('time').value = '';
             displayBookings();
         });
 
@@ -123,12 +149,33 @@
 
                 const div = document.createElement('div');
                 div.classList.add('booking');
-                div.textContent = `${formattedDate} | ${formattedTime} | ${booking.name} ${booking.phone} | ${booking.type}`;
+                div.textContent = `${formattedDate} | ${formattedTime} | ${booking.name} ${booking.phone} | ${booking.type} | ${booking.duration}'`;
                 bookingsList.appendChild(div);
             });
         }
 
-        // Display the current bookings on page load
+        function generateTimeSlots() {
+            const timeSlotsContainer = document.getElementById('timeSlots');
+            const startTime = 10; // 10:00 AM
+            const endTime = 21; // 9:00 PM
+
+            for (let hour = startTime; hour <= endTime; hour++) {
+                const time = hour < 12 ? `${hour}:00 AM` : hour === 12 ? `${hour}:00 PM` : `${hour - 12}:00 PM`;
+                const slotDiv = document.createElement('div');
+                slotDiv.classList.add('time-slot');
+                slotDiv.textContent = time;
+                slotDiv.dataset.time = `${hour < 10 ? '0' : ''}${hour}:00`;
+                slotDiv.addEventListener('click', function() {
+                    document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
+                    slotDiv.classList.add('selected');
+                    document.getElementById('time').value = slotDiv.dataset.time;
+                });
+                timeSlotsContainer.appendChild(slotDiv);
+            }
+        }
+
+        // Generate the time slots on page load
+        generateTimeSlots();
         displayBookings();
     </script>
 </body>
