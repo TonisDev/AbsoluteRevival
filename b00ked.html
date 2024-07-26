@@ -59,6 +59,18 @@
         .hidden {
             display: none;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -71,7 +83,21 @@
         </form>
         <div id="bookingsContainer" class="hidden">
             <h2>Existing Bookings</h2>
-            <div id="bookingsList"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Client Name</th>
+                        <th>Phone</th>
+                        <th>Massage Type</th>
+                        <th>Duration</th>
+                        <th>User IP</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsList"></tbody>
+            </table>
+            <div id="bookingsText"></div>
         </div>
     </div>
 
@@ -92,7 +118,9 @@
 
         function displayBookings() {
             const bookingsList = document.getElementById('bookingsList');
+            const bookingsText = document.getElementById('bookingsText');
             bookingsList.innerHTML = '';
+            bookingsText.innerHTML = '';
 
             bookings.forEach(booking => {
                 const bookingDate = new Date(booking.dateTime);
@@ -100,10 +128,36 @@
                 const formattedDate = bookingDate.toLocaleDateString(undefined, options);
                 const formattedTime = bookingDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+                const tr = document.createElement('tr');
+                const tdDate = document.createElement('td');
+                const tdTime = document.createElement('td');
+                const tdName = document.createElement('td');
+                const tdPhone = document.createElement('td');
+                const tdType = document.createElement('td');
+                const tdDuration = document.createElement('td');
+                const tdUserIP = document.createElement('td');
+
+                tdDate.textContent = formattedDate;
+                tdTime.textContent = formattedTime;
+                tdName.textContent = booking.name;
+                tdPhone.textContent = booking.phone;
+                tdType.textContent = booking.type;
+                tdDuration.textContent = booking.duration + "'";
+                tdUserIP.textContent = booking.userIP;
+
+                tr.appendChild(tdDate);
+                tr.appendChild(tdTime);
+                tr.appendChild(tdName);
+                tr.appendChild(tdPhone);
+                tr.appendChild(tdType);
+                tr.appendChild(tdDuration);
+                tr.appendChild(tdUserIP);
+                bookingsList.appendChild(tr);
+
                 const div = document.createElement('div');
                 div.classList.add('booking');
-                div.textContent = `${formattedDate} | ${formattedTime} | ${booking.name} ${booking.phone} | ${booking.type} | ${booking.duration}'`;
-                bookingsList.appendChild(div);
+                div.textContent = `${formattedDate} | ${formattedTime} | ${booking.name} ${booking.phone} | ${booking.type} | ${booking.duration}' | ${booking.userIP}`;
+                bookingsText.appendChild(div);
             });
         }
     </script>
