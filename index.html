@@ -39,7 +39,7 @@
             border-radius: 5px;
             border: 1px solid #ddd;
         }
-        input[type="submit"] {
+        input[type="submit"], button {
             margin-top: 20px;
             background-color: #007BFF;
             color: white;
@@ -47,7 +47,7 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-        input[type="submit"]:hover {
+        input[type="submit"]:hover, button:hover {
             background-color: #0056b3;
         }
         .booking {
@@ -85,7 +85,7 @@
     </style>
 </head>
 <body>
-    <a href="b00ked.html" class="admin-link">Sessions</a>
+    <a href="admin.html" class="admin-link">Sessions</a>
     <div class="container">
         <h1>Book a Session</h1>
         <form id="bookingForm">
@@ -119,6 +119,8 @@
                 <tr>
                     <th>Date</th>
                     <th>Time</th>
+                    <th>Client</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="bookingsList"></tbody>
@@ -130,7 +132,7 @@
 
         document.getElementById('bookingForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            
+
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
             const date = document.getElementById('date').value;
@@ -138,7 +140,12 @@
             const type = document.getElementById('type').value;
             const duration = document.getElementById('duration').value;
             const dateTime = `${date} ${time}`;
-            const userIP = '127.0.0.1'; // Placeholder for user IP, update it with actual user IP retrieval method
+            const userIP = '127.0.0.1'; // Placeholder for user IP
+
+            // Confirmation before booking
+            if (!confirm(`Are you sure you want to book for ${name} on ${date} at ${time}?`)) {
+                return;
+            }
 
             // Check if the slot is already taken
             if (bookings.some(booking => booking.dateTime === dateTime)) {
@@ -159,7 +166,7 @@
             const bookingsList = document.getElementById('bookingsList');
             bookingsList.innerHTML = '';
 
-            bookings.forEach(booking => {
+            bookings.forEach((booking, index) => {
                 const bookingDate = new Date(booking.dateTime);
                 const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                 const formattedDate = bookingDate.toLocaleDateString(undefined, options);
@@ -168,17 +175,33 @@
                 const tr = document.createElement('tr');
                 const tdDate = document.createElement('td');
                 const tdTime = document.createElement('td');
+                const tdName = document.createElement('td');
+                const tdActions = document.createElement('td');
+                const deleteButton = document.createElement('button');
 
                 tdDate.textContent = formattedDate;
                 tdTime.textContent = formattedTime;
+                tdName.textContent = booking.name;
 
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = function() {
+                    if (confirm(`Are you sure you want to delete the booking for ${booking.name} on ${formattedDate} at ${formattedTime}?`)) {
+                        bookings.splice(index, 1);
+                        localStorage.setItem('bookings', JSON.stringify(bookings));
+                        displayBookings();
+                    }
+                };
+
+                tdActions.appendChild(deleteButton);
                 tr.appendChild(tdDate);
                 tr.appendChild(tdTime);
+                tr.appendChild(tdName);
+                tr.appendChild(tdActions);
                 bookingsList.appendChild(tr);
             });
         }
 
-        // Generate the time slots on page load
+        // Generate the bookings on page load
         displayBookings();
     </script>
 </body>
