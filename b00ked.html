@@ -92,7 +92,6 @@
                         <th>Phone</th>
                         <th>Massage Type</th>
                         <th>Duration</th>
-                        <th>User IP</th>
                     </tr>
                 </thead>
                 <tbody id="bookingsList"></tbody>
@@ -137,7 +136,7 @@
                 const tdPhone = document.createElement('td');
                 const tdType = document.createElement('td');
                 const tdDuration = document.createElement('td');
-                const tdUserIP = document.createElement('td');
+
 
                 tdDate.textContent = formattedDate;
                 tdTime.textContent = formattedTime;
@@ -145,7 +144,7 @@
                 tdPhone.textContent = booking.phone;
                 tdType.textContent = booking.type;
                 tdDuration.textContent = booking.duration + "'";
-                tdUserIP.textContent = booking.userIP;
+
 
                 tr.appendChild(tdDate);
                 tr.appendChild(tdTime);
@@ -153,13 +152,8 @@
                 tr.appendChild(tdPhone);
                 tr.appendChild(tdType);
                 tr.appendChild(tdDuration);
-                tr.appendChild(tdUserIP);
-                bookingsList.appendChild(tr);
 
-                const div = document.createElement('div');
-                div.classList.add('booking');
-                div.textContent = `${formattedDate} | ${formattedTime} | ${booking.name} ${booking.phone} | ${booking.type} | ${booking.duration}' | ${booking.userIP}`;
-                bookingsText.appendChild(div);
+                bookingsList.appendChild(tr);
             });
         }
     </script>
