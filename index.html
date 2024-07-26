@@ -60,6 +60,19 @@
             margin: 10px 0;
             border-radius: 5px;
         }
+        #thankYouMessage {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007BFF;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .available-times {
+            margin-top: 20px;
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -104,6 +117,15 @@
             <h2>Upcoming Bookings</h2>
             <div id="bookingsList"></div>
         </div>
+        <div id="thankYouMessage" class="hidden">
+            <p>Ευχαριστούμε πολύ για την κράτηση.</p>
+            <p>Θα επικοινωνήσουμε μαζί σας για επιβεβαίωση!</p>
+            <p>Η χαλάρωση πλησιάζει!</p>
+        </div>
+        <div id="availableTimes" class="hidden available-times">
+            <h3>Available Time Slots:</h3>
+            <ul id="timeSlotsList"></ul>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -134,24 +156,71 @@
             const duration = document.getElementById('duration').value;
             const userIP = '127.0.0.1'; // Placeholder for IP address, replace with actual IP retrieval method
 
-            const dateTime = `${date} ${time}`;
-            const booking = {
-                dateTime,
-                name,
-                phone,
-                type,
-                duration,
-                userIP
-            };
+            const dateTime = new Date(`${date} ${time}`);
+            const endTime = new Date(dateTime.getTime() + (parseInt(duration) * 60000));
+            const isAvailable = !bookings.some(booking => {
+                const bookingDateTime = new Date(booking.dateTime);
+                const bookingEndTime = new Date(bookingDateTime.getTime() + (parseInt(booking.duration) * 60000));
+                return bookingDateTime < endTime && bookingEndTime > dateTime;
+            });
 
-            bookings.push(booking);
-            localStorage.setItem('bookings', JSON.stringify(bookings));
-            document.getElementById('confirmation').classList.add('hidden');
-            displayBookings();
+            if (isAvailable) {
+                const booking = {
+                    dateTime: `${date} ${time}`,
+                    name,
+                    phone,
+                    type,
+                    duration,
+                    userIP
+                };
+
+                bookings.push(booking);
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+                document.getElementById('confirmation').classList.add('hidden');
+                displayBookings();
+                document.getElementById('thankYouMessage').classList.remove('hidden');
+                document.getElementById('availableTimes').classList.add('hidden');
+            } else {
+                document.getElementById('confirmation').classList.add('hidden');
+                showAvailableTimes(date, time, duration);
+            }
         }
 
         function cancelBooking() {
             document.getElementById('confirmation').classList.add('hidden');
+        }
+
+        function showAvailableTimes(date, time, duration) {
+            const timeSlotsList = document.getElementById('timeSlotsList');
+            const availableTimesContainer = document.getElementById('availableTimes');
+            timeSlotsList.innerHTML = '';
+
+            const startDateTime = new Date(`${date} ${time}`);
+            const endDateTime = new Date(startDateTime.getTime() + (parseInt(duration) * 60000));
+
+            for (let hour = 10; hour < 21; hour++) {
+                for (let minute = 0; minute < 60; minute += 15) {
+                    const slotStartTime = new Date(date);
+                    slotStartTime.setHours(hour, minute, 0, 0);
+                    const slotEndTime = new Date(slotStartTime.getTime() + 30 * 60000); // 30 minutes slots
+
+                    if (slotStartTime >= startDateTime && slotEndTime <= endDateTime) {
+                        const isSlotAvailable = !bookings.some(booking => {
+                            const bookingDateTime = new Date(booking.dateTime);
+                            const bookingEndTime = new Date(bookingDateTime.getTime() + (parseInt(booking.duration) * 60000));
+                            return bookingDateTime < slotEndTime && bookingEndTime > slotStartTime;
+                        });
+
+                        if (isSlotAvailable) {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = slotStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            timeSlotsList.appendChild(listItem);
+                        }
+                    }
+                }
+            }
+
+            availableTimesContainer.classList.remove('hidden');
         }
 
         function displayBookings() {
