@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Booking View</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin Booking View</h1>
+    <form id="passphraseForm">
+        <label for="passphrase">Enter Passphrase:</label>
+        <input type="password" id="passphrase" name="passphrase" required>
+        <input type="submit" value="Submit">
+    </form>
+
+    <div id="adminContent" class="hidden">
+        <h2>Booked Clients</h2>
+        <ul id="clientsList"></ul>
+    </div>
+
+    <script>
+        const correctPassphrase = 'your_secret_passphrase';
+        
+        document.getElementById('passphraseForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const passphrase = document.getElementById('passphrase').value;
+
+            if (passphrase === correctPassphrase) {
+                document.getElementById('adminContent').classList.remove('hidden');
+                displayClients();
+            } else {
+                alert('Incorrect passphrase.');
+            }
+
+            document.getElementById('passphraseForm').reset();
+        });
+
+        function displayClients() {
+            const clientsList = document.getElementById('clientsList');
+            clientsList.innerHTML = '';
+
+            const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+
+            bookings.forEach(booking => {
+                const li = document.createElement('li');
+                li.textContent = `Name: ${booking.name}, Phone: ${booking.phone}, Date and Time: ${booking.dateTime}`;
+                clientsList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
