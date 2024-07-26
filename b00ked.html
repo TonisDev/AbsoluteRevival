@@ -33,7 +33,7 @@
         label {
             margin-top: 10px;
         }
-        input {
+        input, select {
             padding: 10px;
             margin-top: 5px;
             border-radius: 5px;
@@ -160,9 +160,23 @@
             const booking = bookings[index];
             const newDate = prompt("Enter new date (YYYY-MM-DD):", booking.dateTime.split(' ')[0]);
             const newTime = prompt("Enter new time (HH:MM):", booking.dateTime.split(' ')[1]);
+            const newType = prompt("Enter new massage type (full body, back, foot):", booking.type);
+            const newDuration = prompt("Enter new duration (30, 45, 60, 90):", booking.duration);
 
-            if (newDate && newTime) {
+            if (newDate && newTime && newType && newDuration) {
+                // Validate the new data
+                if (!['full body', 'back', 'foot'].includes(newType)) {
+                    alert("Invalid massage type.");
+                    return;
+                }
+                if (![30, 45, 60, 90].includes(parseInt(newDuration))) {
+                    alert("Invalid duration.");
+                    return;
+                }
+
                 booking.dateTime = `${newDate} ${newTime}`;
+                booking.type = newType;
+                booking.duration = newDuration;
                 localStorage.setItem('bookings', JSON.stringify(bookings));
                 displayBookings();
             }
